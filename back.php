@@ -63,8 +63,6 @@ if (isset($_GET['logout'])) {
     exit();
 }
 
-// Other functions remain unchanged...
-
 // CSRF Protection
 function csrfToken() {
     if (empty($_SESSION['csrf_token'])) {
@@ -74,36 +72,44 @@ function csrfToken() {
 }
 
 // Secure Post Creation with Image & Video Upload
-if (isset($_POST['create_post']) && $_POST['csrf_token'] === $_SESSION['csrf_token']) {
+if (isset($_POST['create_post']) && isset($_POST['csrf_token']) && $_POST['csrf_token'] === $_SESSION['csrf_token']) {
     $user_id = $_SESSION['user_id'];
     $content = htmlspecialchars($_POST['content'], ENT_QUOTES, 'UTF-8');
     $image = '';
     $video = '';
     
+    // For a single file input named "media"
     if (!empty($_FILES['media']['name'])) {
         $fileType = mime_content_type($_FILES['media']['tmp_name']);
         $fileName = basename($_FILES['media']['name']);
         $uploadPath = 'uploads/' . $fileName;
-    
+        
         if (strpos($fileType, 'image') !== false) {
-            $image = $uploadPath; // Store it as an image
+            $image = $uploadPath;
         } elseif (strpos($fileType, 'video') !== false) {
-            $video = $uploadPath; // Store it as a video
+            $video = $uploadPath;
         }
-    
+        
         move_uploaded_file($_FILES['media']['tmp_name'], $uploadPath);
     }
-    
     
     $stmt = $conn->prepare("INSERT INTO posts (user_id, content, image, video) VALUES (?, ?, ?, ?)");
     $stmt->bind_param("isss", $user_id, $content, $image, $video);
     $stmt->execute();
 }
 
-// Fetch All Posts
+// Fetch All Posts with Like and Comment Counts
 function getPosts() {
     global $conn;
-    $result = $conn->query("SELECT posts.id, users.username, posts.content, posts.image, posts.video FROM posts JOIN users ON posts.user_id = users.id ORDER BY posts.id DESC");
+    $query = "
+        SELECT posts.id, users.username, posts.content, posts.image, posts.video, 
+               (SELECT COUNT(*) FROM likes WHERE likes.post_id = posts.id) AS like_count,
+               (SELECT COUNT(*) FROM comments WHERE comments.post_id = posts.id) AS comment_count
+        FROM posts 
+        JOIN users ON posts.user_id = users.id 
+        ORDER BY posts.id DESC
+    ";
+    $result = $conn->query($query);
     return $result->fetch_all(MYSQLI_ASSOC);
 }
 
@@ -117,8 +123,23 @@ function getMyPosts() {
     return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 }
 
+// Fetch Comments for a Specific Post
+function getComments($post_id) {
+    global $conn;
+    $stmt = $conn->prepare("
+        SELECT users.username, comments.comment 
+        FROM comments 
+        JOIN users ON comments.user_id = users.id 
+        WHERE comments.post_id = ? 
+        ORDER BY comments.id DESC
+    ");
+    $stmt->bind_param("i", $post_id);
+    $stmt->execute();
+    return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+}
+
 // Edit Post
-if (isset($_POST['edit_post']) && $_POST['csrf_token'] === $_SESSION['csrf_token']) {
+if (isset($_POST['edit_post']) && isset($_POST['csrf_token']) && $_POST['csrf_token'] === $_SESSION['csrf_token']) {
     $post_id = $_POST['post_id'];
     $content = htmlspecialchars($_POST['content'], ENT_QUOTES, 'UTF-8');
     $stmt = $conn->prepare("UPDATE posts SET content = ? WHERE id = ?");
@@ -127,18 +148,16 @@ if (isset($_POST['edit_post']) && $_POST['csrf_token'] === $_SESSION['csrf_token
 }
 
 // Delete Post
-if (isset($_POST['delete_post']) && $_POST['csrf_token'] === $_SESSION['csrf_token']) {
+if (isset($_POST['delete_post']) && isset($_POST['csrf_token']) && $_POST['csrf_token'] === $_SESSION['csrf_token']) {
     $post_id = $_POST['post_id'];
     $user_id = $_SESSION['user_id'];
-
-    // Ensure only the owner can delete their post
     $stmt = $conn->prepare("DELETE FROM posts WHERE id = ? AND user_id = ?");
     $stmt->bind_param("ii", $post_id, $user_id);
     $stmt->execute();
 }
 
 // Comment on Post
-if (isset($_POST['comment']) && $_POST['csrf_token'] === $_SESSION['csrf_token']) {
+if (isset($_POST['comment']) && isset($_POST['csrf_token']) && $_POST['csrf_token'] === $_SESSION['csrf_token']) {
     $post_id = $_POST['post_id'];
     $user_id = $_SESSION['user_id'];
     $comment = htmlspecialchars($_POST['comment'], ENT_QUOTES, 'UTF-8');
@@ -164,8 +183,4 @@ if (isset($_POST['follow_user'])) {
     $stmt->bind_param("ii", $follower_id, $followed_id);
     $stmt->execute();
 }
-
-
-
-
 ?>
