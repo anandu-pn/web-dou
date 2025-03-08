@@ -13,7 +13,6 @@ $posts = getPosts();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="User Posts - View and interact with engaging posts.">
     <title>User Posts</title>
-    <link rel="stylesheet" href="style.css">
     <link rel="icon" href="favicon.ico">
     <style>
         /* Apply User's Custom Style */
@@ -69,6 +68,7 @@ $posts = getPosts();
         .post {
             border-bottom: 1px solid #ddd;
             padding: 15px;
+            margin-bottom: 15px;
         }
 
         .post img, .post video {
@@ -115,6 +115,16 @@ $posts = getPosts();
         input:focus {
             border-color: #005ecb;
         }
+
+        .comments {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f0f0f0;
+            border-radius: 8px;
+        }
+        .comment {
+            margin-bottom: 8px;
+        }
     </style>
 </head>
 <body>
@@ -125,7 +135,6 @@ $posts = getPosts();
     <span id="links">
         <a href="#">Homepage</a>
         <a href="dashboard.php">My Posts</a>
-        
         <?php if (isset($_SESSION['user_id'])): ?>
             <a class="logout" href="back.php?logout=true">Logout</a>
         <?php else: ?>
@@ -153,18 +162,38 @@ $posts = getPosts();
                 </video>
             <?php endif; ?>
 
-            <!-- Like Button -->
+            <!-- Like Button with Count -->
             <form action="back.php" method="POST">
                 <input type="hidden" name="post_id" value="<?php echo $post['id']; ?>">
-                <button type="submit" name="like_post" class="like-btn">Like</button>
+                <button type="submit" name="like_post" class="like-btn">
+                    Like (<?php echo $post['like_count']; ?>)
+                </button>
             </form>
+
+            <!-- Display Comment Count -->
+            <p><?php echo $post['comment_count']; ?> Comments</p>
 
             <!-- Comment Form -->
             <form action="back.php" method="POST">
                 <input type="hidden" name="post_id" value="<?php echo $post['id']; ?>">
+                <input type="hidden" name="csrf_token" value="<?php echo csrfToken(); ?>">
                 <input type="text" name="comment" placeholder="Write a comment..." required>
                 <button type="submit" name="comment" class="comment-btn">Comment</button>
             </form>
+
+            <!-- Display Actual Comments -->
+            <div class="comments">
+                <?php
+                $comments = getComments($post['id']);
+                if (!empty($comments)) {
+                    foreach ($comments as $comment) {
+                        echo '<div class="comment"><strong>' . htmlspecialchars($comment['username']) . ':</strong> ' . htmlspecialchars($comment['comment']) . '</div>';
+                    }
+                } else {
+                    echo '<div class="comment">No comments yet.</div>';
+                }
+                ?>
+            </div>
         </div>
     <?php endforeach; ?>
 </div>
