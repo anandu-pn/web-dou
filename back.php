@@ -80,15 +80,20 @@ if (isset($_POST['create_post']) && $_POST['csrf_token'] === $_SESSION['csrf_tok
     $image = '';
     $video = '';
     
-    if (!empty($_FILES['image']['name'])) {
-        $image = 'uploads/' . basename($_FILES['image']['name']);
-        move_uploaded_file($_FILES['image']['tmp_name'], $image);
+    if (!empty($_FILES['media']['name'])) {
+        $fileType = mime_content_type($_FILES['media']['tmp_name']);
+        $fileName = basename($_FILES['media']['name']);
+        $uploadPath = 'uploads/' . $fileName;
+    
+        if (strpos($fileType, 'image') !== false) {
+            $image = $uploadPath; // Store it as an image
+        } elseif (strpos($fileType, 'video') !== false) {
+            $video = $uploadPath; // Store it as a video
+        }
+    
+        move_uploaded_file($_FILES['media']['tmp_name'], $uploadPath);
     }
     
-    if (!empty($_FILES['video']['name'])) {
-        $video = 'uploads/' . basename($_FILES['video']['name']);
-        move_uploaded_file($_FILES['video']['tmp_name'], $video);
-    }
     
     $stmt = $conn->prepare("INSERT INTO posts (user_id, content, image, video) VALUES (?, ?, ?, ?)");
     $stmt->bind_param("isss", $user_id, $content, $image, $video);
