@@ -1,0 +1,66 @@
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #f0f2f5;
+  }
+  .container {
+    max-width: 950px;
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: #f0f2f5;
+  }
+  .post {
+    margin-bottom: 15px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+  }
+  .login-btn {
+    background-color: #0078ff;
+    color: #fff;
+    height: 40px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    width: 200px;
+  }
+  .login-btn:hover {
+    background-color: #005ecb;
+  }
+  
+  .navbar{
+    margin: 10px;
+    display: flex;
+    justify-content: space-between;
+    width: 95vw;
+  }
+  
+  #links {
+    border: #0078ff solid;
+    width: 60vw;
+    align-items: center;
+    display: flex;
+    justify-content: space-evenly;
+  }
+  
+  #links a{
+    text-decoration: none;
+  }
+  
+  .post-user {
+    font-size: large;
+    font-weight: bolder;
+    color: #005ecb;
+  }
+
+  a:visited {
+    color: #005ecb;
+  }
