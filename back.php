@@ -78,7 +78,7 @@ if (isset($_POST['create_post']) && isset($_POST['csrf_token']) && $_POST['csrf_
     $image = '';
     $video = '';
     
-    // For a single file input named "media"
+    // For a single file input named "media" (if used in dashboard.php)
     if (!empty($_FILES['media']['name'])) {
         $fileType = mime_content_type($_FILES['media']['tmp_name']);
         $fileName = basename($_FILES['media']['name']);
@@ -157,10 +157,17 @@ if (isset($_POST['delete_post']) && isset($_POST['csrf_token']) && $_POST['csrf_
 }
 
 // Comment on Post
-if (isset($_POST['comment']) && isset($_POST['csrf_token']) && $_POST['csrf_token'] === $_SESSION['csrf_token']) {
+// 1. Check for 'submit_comment' to ensure the button name is unique
+// 2. Use $_POST['comment'] for the actual comment text
+if (isset($_POST['submit_comment']) && isset($_POST['csrf_token']) && $_POST['csrf_token'] === $_SESSION['csrf_token']) {
     $post_id = $_POST['post_id'];
     $user_id = $_SESSION['user_id'];
-    $comment = htmlspecialchars($_POST['comment'], ENT_QUOTES, 'UTF-8');
+    $comment = trim($_POST['comment']); 
+    if ($comment === '') {
+        die('Cannot submit an empty comment.');
+    }
+    $comment = htmlspecialchars($comment, ENT_QUOTES, 'UTF-8');
+    
     $stmt = $conn->prepare("INSERT INTO comments (post_id, user_id, comment) VALUES (?, ?, ?)");
     $stmt->bind_param("iis", $post_id, $user_id, $comment);
     $stmt->execute();

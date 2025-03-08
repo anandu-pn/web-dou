@@ -177,17 +177,22 @@ $posts = getPosts();
             <form action="back.php" method="POST">
                 <input type="hidden" name="post_id" value="<?php echo $post['id']; ?>">
                 <input type="hidden" name="csrf_token" value="<?php echo csrfToken(); ?>">
+                
+                <!-- Name 'comment' is for the text input -->
                 <input type="text" name="comment" placeholder="Write a comment..." required>
-                <button type="submit" name="comment" class="comment-btn">Comment</button>
+                
+                <!-- Use a different name for the submit button -->
+                <button type="submit" name="submit_comment" class="comment-btn">Comment</button>
             </form>
 
             <!-- Display Actual Comments -->
             <div class="comments">
                 <?php
+                // Retrieve and display comments for each post
                 $comments = getComments($post['id']);
                 if (!empty($comments)) {
-                    foreach ($comments as $comment) {
-                        echo '<div class="comment"><strong>' . htmlspecialchars($comment['username']) . ':</strong> ' . htmlspecialchars($comment['comment']) . '</div>';
+                    foreach ($comments as $cmt) {
+                        echo '<div class="comment"><strong>' . htmlspecialchars($cmt['username']) . ':</strong> ' . htmlspecialchars($cmt['comment']) . '</div>';
                     }
                 } else {
                     echo '<div class="comment">No comments yet.</div>';
