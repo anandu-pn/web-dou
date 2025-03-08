@@ -1,8 +1,8 @@
 <?php
 // Database Connection
-$host = 'localhost';
+$host = '192.168.137.48';
 $user = 'root';
-$password = '';
+$password = 'yourpassword';
 $database = 'experience_app';
 $conn = new mysqli($host, $user, $password, $database);
 
