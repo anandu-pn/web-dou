@@ -123,7 +123,7 @@ $posts = getPosts();
 <nav class="navbar">
     <h1>Experiences</h1>
     <span id="links">
-        <a href="index.php">Homepage</a>
+        <a href="#">Homepage</a>
         <a href="dashboard.php">My Posts</a>
         
         <?php if (isset($_SESSION['user_id'])): ?>
